@@ -50,19 +50,25 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
 
   @override
   void initState() {
-    SharedPreferences.getInstance().then((SharedPreferences sharedPreferences) {
-      _durationPlayer1 = Duration(
-        hours: sharedPreferences.getInt('player1Hour') ?? 0,
-        minutes: sharedPreferences.getInt('player1Minutes') ?? 10,
-        seconds: sharedPreferences.getInt('player1Seconds') ?? 0,
-      );
-      _durationPlayer2 = Duration(
-        hours: sharedPreferences.getInt('player2Hour') ?? 0,
-        minutes: sharedPreferences.getInt('player2Minutes') ?? 10,
-        seconds: sharedPreferences.getInt('player2Seconds') ?? 0,
-      );
-    });
+    loadPreferences();
     super.initState();
+  }
+
+  void loadPreferences() {
+    SharedPreferences.getInstance().then((SharedPreferences sharedPreferences) {
+      setState(() {
+        _durationPlayer1 = Duration(
+          hours: sharedPreferences.getInt('player1Hour') ?? 0,
+          minutes: sharedPreferences.getInt('player1Minutes') ?? 10,
+          seconds: sharedPreferences.getInt('player1Seconds') ?? 0,
+        );
+        _durationPlayer2 = Duration(
+          hours: sharedPreferences.getInt('player2Hour') ?? 0,
+          minutes: sharedPreferences.getInt('player2Minutes') ?? 10,
+          seconds: sharedPreferences.getInt('player2Seconds') ?? 0,
+        );
+      });
+    });
   }
 
   @override
@@ -74,7 +80,7 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
           children: <Widget>[
             RotatedBox(
               quarterTurns: 2,
-              child: _createButton(_durationPlayer1, () => startTimer(player1, player2), player1),
+              child: _createButton(() => _durationPlayer1, () => startTimer(player1, player2), player1),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -95,7 +101,7 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
                 ),
               ],
             ),
-            _createButton(_durationPlayer2, () => startTimer(player2, player1), player2),
+            _createButton(() => _durationPlayer2, () => startTimer(player2, player1), player2),
           ],
         ),
       ),
@@ -108,6 +114,7 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
       player2.reset();
       player1.stop();
       player1.reset();
+      loadPreferences();
     });
   }
 
@@ -118,7 +125,7 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
     });
   }
 
-  Widget _createButton(Duration duration, VoidCallback onPressed, Stopwatch stopwatch) {
+  Widget _createButton(Duration Function() duration, VoidCallback onPressed, Stopwatch stopwatch) {
     return ConstrainedBox(
       constraints: const BoxConstraints(minWidth: double.infinity),
       child: Padding(
@@ -129,7 +136,7 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              _format(Duration(milliseconds: duration.inMilliseconds - stopwatch.elapsedMilliseconds)),
+              _format(Duration(milliseconds: duration()?.inMilliseconds ?? 0 - stopwatch.elapsedMilliseconds)),
               style: TextStyle(fontSize: 100.0),
             ),
           ),
