@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:chess_clock/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 void main() => runApp(ChessClock());
 
@@ -57,23 +58,17 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 FlatButton(
-                  child: Text('Reset', style: TextStyle(fontSize: 30.0)),
-                  onPressed: () {
-                    setState(() {
-                      player2.stop();
-                      player1.stop();
-                      player1.reset();
-                      player2.reset();
-                    });
-                  },
+                  child: Icon(Icons.refresh, size: 70.0),
+                  onPressed: _reset,
                 ),
                 if (player1.isRunning || player2.isRunning)
                   FlatButton(
-                    child: Text('Pause', style: TextStyle(fontSize: 30.0)),
+                    child: Icon(Icons.pause, size: 70.0),
                     onPressed: _stop,
                   ),
+                if (!player1.isRunning && !player2.isRunning) Container(),
                 FlatButton(
-                  child: Text('Config', style: TextStyle(fontSize: 30.0)),
+                  child: Icon(Icons.settings, size: 70.0),
                   onPressed: () => print(''),
                 ),
               ],
@@ -83,6 +78,15 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
         ),
       ),
     );
+  }
+
+  void _reset() {
+    setState(() {
+      player2.stop();
+      player2.reset();
+      player1.stop();
+      player1.reset();
+    });
   }
 
   void _stop() {
