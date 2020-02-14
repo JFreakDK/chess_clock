@@ -1,20 +1,30 @@
 import 'dart:async';
 
+import 'package:chess_clock/settings.dart';
 import 'package:chess_clock/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(ChessClock());
 
 class ChessClock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIOverlays([]);
     return MaterialApp(
+      initialRoute: '/',
+      routes: {
+        // When navigating to the "/" route, build the FirstScreen widget.
+        '/': (context) => ChessClockHomePage(),
+        // When navigating to the "/second" route, build the SecondScreen widget.
+        '/settings': (context) => Settings(),
+      },
       title: 'Chess clock',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: ChessClockHomePage(),
     );
   }
 }
@@ -35,11 +45,23 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
   Timer _timer;
   Stopwatch player1 = Stopwatch();
   Stopwatch player2 = Stopwatch();
-  Duration _durationPlayer1 = Duration(seconds: 15);
-  Duration _durationPlayer2 = Duration(seconds: 15);
+  Duration _durationPlayer1;
+  Duration _durationPlayer2;
 
   @override
   void initState() {
+    SharedPreferences.getInstance().then((SharedPreferences sharedPreferences) {
+      _durationPlayer1 = Duration(
+        hours: sharedPreferences.getInt('player1Hour') ?? 0,
+        minutes: sharedPreferences.getInt('player1Minutes') ?? 10,
+        seconds: sharedPreferences.getInt('player1Seconds') ?? 0,
+      );
+      _durationPlayer2 = Duration(
+        hours: sharedPreferences.getInt('player2Hour') ?? 0,
+        minutes: sharedPreferences.getInt('player2Minutes') ?? 10,
+        seconds: sharedPreferences.getInt('player2Seconds') ?? 0,
+      );
+    });
     super.initState();
   }
 
@@ -69,7 +91,7 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
                 if (!player1.isRunning && !player2.isRunning) Container(),
                 FlatButton(
                   child: Icon(Icons.settings, size: 70.0),
-                  onPressed: () => print(''),
+                  onPressed: () => Navigator.pushNamed(context, '/settings'),
                 ),
               ],
             ),
