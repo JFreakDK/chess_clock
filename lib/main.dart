@@ -21,7 +21,7 @@ class ChessClock extends StatelessWidget {
 class ChessClockHomePage extends StatefulWidget {
   ChessClockHomePage({
     Key key,
-    this.interval = const Duration(seconds: 1),
+    this.interval = const Duration(milliseconds: 1),
   }) : super(key: key);
 
   final Duration interval;
@@ -139,11 +139,11 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
 
   void timerCallback(Timer timer, Duration duration, void Function(Duration duration) func, var onFinish) {
     setState(() {
-      if (duration.inSeconds == 0) {
+      if (duration.inMilliseconds == 0) {
         timer.cancel();
         if (onFinish != null) onFinish();
       } else {
-        func(Duration(seconds: duration.inSeconds - 1));
+        func(Duration(milliseconds: duration.inMilliseconds - 1));
       }
     });
   }
