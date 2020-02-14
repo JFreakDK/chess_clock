@@ -48,19 +48,9 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
-            ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: double.infinity),
-              child: RotatedBox(
-                quarterTurns: 2,
-                child: FlatButton(
-                  color: Colors.grey.shade300,
-                  onPressed: () => startTimerPlayer2(),
-                  child: Text(
-                    _format(_durationPlayer1),
-                    style: TextStyle(fontSize: 70.0),
-                  ),
-                ),
-              ),
+            RotatedBox(
+              quarterTurns: 2,
+              child: _createButton(_durationPlayer1, () => startTimerPlayer2(), () => _timerPlayer1),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -72,14 +62,7 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
                 if ((_timerPlayer1 != null && _timerPlayer1.isActive) || (_timerPlayer2 != null && _timerPlayer2.isActive))
                   FlatButton(
                     child: Text('Pause', style: TextStyle(fontSize: 30.0)),
-                    onPressed: () {
-                      if (_timerPlayer1 != null && _timerPlayer1.isActive) {
-                        _timerPlayer1.cancel();
-                      }
-                      if (_timerPlayer2 != null && _timerPlayer2.isActive) {
-                        _timerPlayer2.cancel();
-                      }
-                    },
+                    onPressed: _stopTimers,
                   ),
                 FlatButton(
                   child: Text('Config', style: TextStyle(fontSize: 30.0)),
@@ -87,18 +70,39 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
                 ),
               ],
             ),
-            ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: double.infinity),
-              child: FlatButton(
-                color: Colors.grey.shade300,
-                onPressed: () => startTimerPlayer1(),
-                child: Text(
-                  _format(_durationPlayer2),
-                  style: TextStyle(fontSize: 70.0),
-                ),
-              ),
-            ),
+            _createButton(_durationPlayer2, () => startTimerPlayer1(), () => _timerPlayer2),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _stopTimers() {
+    setState(() {
+      if (_timerPlayer1 != null && _timerPlayer1.isActive) {
+        _timerPlayer1.cancel();
+      }
+      if (_timerPlayer2 != null && _timerPlayer2.isActive) {
+        _timerPlayer2.cancel();
+      }
+    });
+  }
+
+  Widget _createButton(Duration duration, VoidCallback onPressed, Timer Function() timer) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: double.infinity),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: FlatButton(
+          color: timer() != null && timer().isActive ? Colors.orange : Colors.grey.shade300,
+          onPressed: onPressed,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              _format(duration),
+              style: TextStyle(fontSize: 100.0),
+            ),
+          ),
         ),
       ),
     );
@@ -117,7 +121,9 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
   void startTimer(Timer timerPlayer, Duration timerDuration, Timer otherTimerPlayer, void Function(Timer timer) updateTimer,
       void Function(Duration duration) updateDuration) {
     if (otherTimerPlayer != null && otherTimerPlayer.isActive) {
-      otherTimerPlayer.cancel();
+      setState(() {
+        otherTimerPlayer.cancel();
+      });
     }
     if (timerPlayer == null || !timerPlayer.isActive) {
       updateTimer(Timer.periodic(widget.interval, (Timer timer) {
