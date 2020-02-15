@@ -16,9 +16,7 @@ class ChessClock extends StatelessWidget {
     return MaterialApp(
       initialRoute: '/',
       routes: {
-        // When navigating to the "/" route, build the FirstScreen widget.
         '/': (context) => ChessClockHomePage(),
-        // When navigating to the "/second" route, build the SecondScreen widget.
         '/settings': (context) => Settings(),
       },
       title: 'Chess clock',
@@ -32,7 +30,7 @@ class ChessClock extends StatelessWidget {
 class ChessClockHomePage extends StatefulWidget {
   ChessClockHomePage({
     Key key,
-    this.interval = const Duration(milliseconds: 1),
+    this.interval = const Duration(seconds: 1),
   }) : super(key: key);
 
   final Duration interval;
@@ -89,12 +87,14 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
                   child: Icon(Icons.refresh, size: 70.0),
                   onPressed: _reset,
                 ),
-                if (player1.isRunning || player2.isRunning)
-                  FlatButton(
-                    child: Icon(Icons.pause, size: 70.0),
-                    onPressed: _stop,
+                FlatButton(
+                  child: Icon(
+                    Icons.pause,
+                    size: 70.0,
+                    color: (!player1.isRunning && !player2.isRunning) ? Colors.white : null,
                   ),
-                if (!player1.isRunning && !player2.isRunning) Container(),
+                  onPressed: _stop,
+                ),
                 FlatButton(
                   child: Icon(Icons.settings, size: 70.0),
                   onPressed: () => Navigator.pushNamed(context, '/settings'),
@@ -126,6 +126,8 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
   }
 
   Widget _createButton(Duration Function() duration, VoidCallback onPressed, Stopwatch stopwatch) {
+    var diff = (duration()?.inMilliseconds ?? 0) - stopwatch.elapsedMilliseconds;
+    var timeLeft = Duration(milliseconds: diff);
     return ConstrainedBox(
       constraints: const BoxConstraints(minWidth: double.infinity),
       child: Padding(
@@ -136,7 +138,7 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              _format(Duration(milliseconds: duration()?.inMilliseconds ?? 0 - stopwatch.elapsedMilliseconds)),
+              _format(timeLeft),
               style: TextStyle(fontSize: 100.0),
             ),
           ),
@@ -146,9 +148,7 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
   }
 
   void startTimer(Stopwatch current, Stopwatch other) {
-    if (_timer == null) {
-      _timer = Timer.periodic(Duration(seconds: 1), tick);
-    } else if (!_timer.isActive) {
+    if (_timer == null || !_timer.isActive) {
       _timer = Timer.periodic(Duration(seconds: 1), tick);
     }
     other.start();
@@ -170,6 +170,7 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
         player2.stop();
         player1.stop();
         _timer.cancel();
+        HapticFeedback.heavyImpact();
       }
     });
   }
