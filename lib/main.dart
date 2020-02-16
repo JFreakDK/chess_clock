@@ -45,6 +45,8 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
   Stopwatch player2 = Stopwatch();
   Duration _durationPlayer1;
   Duration _durationPlayer2;
+  Duration _player1TimeLeft;
+  Duration _player2TimeLeft;
 
   @override
   void initState() {
@@ -60,11 +62,13 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
           minutes: sharedPreferences.getInt('player1Minutes') ?? 10,
           seconds: sharedPreferences.getInt('player1Seconds') ?? 0,
         );
+        _player1TimeLeft = _durationPlayer1;
         _durationPlayer2 = Duration(
           hours: sharedPreferences.getInt('player2Hour') ?? 0,
           minutes: sharedPreferences.getInt('player2Minutes') ?? 10,
           seconds: sharedPreferences.getInt('player2Seconds') ?? 0,
         );
+        _player2TimeLeft = _durationPlayer2;
       });
     });
   }
@@ -78,7 +82,7 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
           children: <Widget>[
             RotatedBox(
               quarterTurns: 2,
-              child: _createButton(() => _durationPlayer1, () => startTimer(player1, player2), player1),
+              child: _createButton(() => _player1TimeLeft, () => startTimer(player1, player2), player1),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -101,7 +105,7 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
                 ),
               ],
             ),
-            _createButton(() => _durationPlayer2, () => startTimer(player2, player1), player2),
+            _createButton(() => _player2TimeLeft, () => startTimer(player2, player1), player2),
           ],
         ),
       ),
@@ -126,8 +130,6 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
   }
 
   Widget _createButton(Duration Function() duration, VoidCallback onPressed, Stopwatch stopwatch) {
-    var diff = (duration()?.inMilliseconds ?? 0) - stopwatch.elapsedMilliseconds;
-    var timeLeft = Duration(milliseconds: diff);
     return ConstrainedBox(
       constraints: const BoxConstraints(minWidth: double.infinity),
       child: Padding(
@@ -138,7 +140,7 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              _format(timeLeft),
+              _format(duration()),
               style: TextStyle(fontSize: 100.0),
             ),
           ),
@@ -155,6 +157,9 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
     if (current.isRunning) {
       current.stop();
     }
+    setState(() {
+      updateTimeLeft();
+    });
   }
 
   String _format(Duration duration) {
@@ -166,6 +171,7 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
 
   void tick(Timer timer) {
     setState(() {
+      updateTimeLeft();
       if (_timeElapsed(_durationPlayer1, player1) || _timeElapsed(_durationPlayer2, player2)) {
         player2.stop();
         player1.stop();
@@ -173,6 +179,20 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
         HapticFeedback.heavyImpact();
       }
     });
+  }
+
+  void updateTimeLeft() {
+    if (player1.isRunning) {
+      _updateTimeLeft(_durationPlayer1, player1, (duration) => _player1TimeLeft = duration);
+    }
+    if (player2.isRunning) {
+      _updateTimeLeft(_durationPlayer2, player2, (duration) => _player2TimeLeft = duration);
+    }
+  }
+
+  void _updateTimeLeft(Duration duration, Stopwatch stopwatch, Function(Duration duration) updateDuration) {
+    var diff = (duration.inMilliseconds ?? 0) - stopwatch.elapsedMilliseconds;
+    updateDuration(Duration(milliseconds: diff));
   }
 
   bool _timeElapsed(Duration duration, Stopwatch stopwatch) {
