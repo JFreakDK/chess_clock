@@ -163,10 +163,13 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
   }
 
   String _format(Duration duration) {
-    if (duration.inHours >= 1) return formatByHours(duration);
-    if (duration.inMinutes >= 1) return formatByMinutes(duration);
+    if (duration != null) {
+      if (duration.inHours >= 1) return formatByHours(duration);
+      if (duration.inMinutes >= 1) return formatByMinutes(duration);
 
-    return formatBySeconds(duration);
+      return formatBySeconds(duration);
+    }
+    return '-';
   }
 
   void tick(Timer timer) {

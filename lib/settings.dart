@@ -12,8 +12,30 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  int _player1Hours = 0, _player1Seconds = 0, _player1Minutes = 10;
   int _player2Hours = 0, _player2Seconds = 0, _player2Minutes = 10;
+  TextEditingController _player1HoursController = TextEditingController(),
+      _player1MinutesController = TextEditingController(),
+      _player1SecondsController = TextEditingController(),
+      _player2HoursController = TextEditingController(),
+      _player2MinutesController = TextEditingController(),
+      _player2SecondsController = TextEditingController();
+
+  final focus = FocusNode();
+
+  @override
+  void initState() {
+    SharedPreferences.getInstance().then((SharedPreferences sharedPreferences) {
+      setState(() {
+        _player1HoursController.text = getTimeText(sharedPreferences, 'player1Hour', 0);
+        _player1MinutesController.text = getTimeText(sharedPreferences, 'player1Minutes', 10);
+        _player1SecondsController.text = getTimeText(sharedPreferences, 'player1Seconds', 0);
+        _player2Hours = sharedPreferences.getInt('player2Hour') ?? 0;
+        _player2Minutes = sharedPreferences.getInt('player2Minutes') ?? 10;
+        _player2Seconds = sharedPreferences.getInt('player2Seconds') ?? 0;
+      });
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,30 +58,71 @@ class _SettingsState extends State<Settings> {
                   style: TextStyle(fontSize: 20.0),
                 ),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: <Widget>[
-                    DropdownButton(
-                      items: widget.twentyfive.map((int e) => DropdownMenuItem<int>(value: e, child: Text('$e'))).toList(),
-                      onChanged: (value) => setState(() {
-                        this._player1Hours = value;
-                      }),
-                      value: _player1Hours,
+                    Expanded(
+                      child: TextField(
+                        onChanged: (input) {
+                          if (input.length == 2) FocusScope.of(context).nextFocus();
+                        },
+                        controller: _player1HoursController,
+                        textInputAction: TextInputAction.next,
+                        style: TextStyle(fontSize: 40.0, height: 2.0, color: Colors.black),
+                        textAlign: TextAlign.center,
+                        keyboardType: TextInputType.number,
+                        onSubmitted: (_) => FocusScope.of(context).nextFocus(), // move focus to next
+                        inputFormatters: <TextInputFormatter>[
+                          WhitelistingTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(2),
+                        ], // Only numbers can be entered
+                      ),
                     ),
-                    Text('hours'),
-                    DropdownButton(
-                        items: widget.sixty.map((int e) => DropdownMenuItem<int>(value: e, child: Text('$e'))).toList(),
-                        onChanged: (value) => setState(() {
-                              this._player1Minutes = value;
-                            }),
-                        value: _player1Minutes),
-                    Text('minutes'),
-                    DropdownButton(
-                        items: widget.sixty.map((int e) => DropdownMenuItem<int>(value: e, child: Text('$e'))).toList(),
-                        onChanged: (value) => setState(() {
-                              this._player1Seconds = value;
-                            }),
-                        value: _player1Seconds),
-                    Text('Seconds'),
+                    Text(
+                      ':',
+                      style: TextStyle(fontSize: 40.0),
+                    ),
+                    Expanded(
+                      child: TextField(
+                        onChanged: (input) {
+                          if (input.length == 2) FocusScope.of(context).nextFocus();
+                        },
+                        controller: _player1MinutesController,
+                        textInputAction: TextInputAction.next,
+                        onSubmitted: (_) => FocusScope.of(context).nextFocus(), // move focus to next
+                        style: TextStyle(fontSize: 40.0, height: 2.0, color: Colors.black),
+                        textAlign: TextAlign.center,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          WhitelistingTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(2),
+                        ], // Only numbers can be entered
+                      ),
+                    ),
+                    Text(
+                      ':',
+                      style: TextStyle(fontSize: 40.0),
+                    ),
+                    Expanded(
+                      child: TextField(
+                        onChanged: (input) {
+                          if (input.length == 2) FocusScope.of(context).nextFocus();
+                        },
+                        controller: _player1SecondsController,
+                        textInputAction: TextInputAction.next,
+                        onEditingComplete: () => FocusScope.of(context).nextFocus(),
+                        onSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                        style: TextStyle(
+                          fontSize: 40.0,
+                          height: 2.0,
+                          color: Colors.black,
+                        ),
+                        textAlign: TextAlign.center,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          WhitelistingTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(2),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
                 Text(
@@ -102,9 +165,9 @@ class _SettingsState extends State<Settings> {
             child: FlatButton(
               onPressed: () async {
                 SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-                await sharedPreferences.setInt('player1Hour', _player1Hours);
-                await sharedPreferences.setInt('player1Minutes', _player1Minutes);
-                await sharedPreferences.setInt('player1Seconds', _player1Seconds);
+                await sharedPreferences.setInt('player1Hour', int.parse(_player1HoursController.text));
+                await sharedPreferences.setInt('player1Minutes', int.parse(_player1MinutesController.text));
+                await sharedPreferences.setInt('player1Seconds', int.parse(_player1SecondsController.text));
                 await sharedPreferences.setInt('player2Hour', _player2Hours);
                 await sharedPreferences.setInt('player2Minutes', _player2Minutes);
                 await sharedPreferences.setInt('player2Seconds', _player2Seconds);
@@ -136,5 +199,13 @@ class _SettingsState extends State<Settings> {
     setState(() {
       this._player2Seconds = value;
     });
+  }
+
+  String getTimeText(SharedPreferences sharedPreferences, String key, int defaultValue) {
+    int value = sharedPreferences.getInt(key) ?? defaultValue;
+    if (value < 10) {
+      return '0$value';
+    }
+    return value.toString();
   }
 }
