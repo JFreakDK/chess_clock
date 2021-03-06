@@ -82,7 +82,7 @@ class _SettingsState extends State<Settings> {
           ),
           ConstrainedBox(
             constraints: const BoxConstraints(minWidth: double.infinity),
-            child: FlatButton(
+            child: TextButton(
               onPressed: () async {
                 SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
                 await sharedPreferences.setInt('player1Hour', _player1Hours);
@@ -94,8 +94,8 @@ class _SettingsState extends State<Settings> {
                 Navigator.pop(context);
               },
               child: const Text('Save', style: TextStyle(fontSize: 20)),
-              color: Colors.blue,
-              textColor: Colors.white,
+              //style: ButtonStyle(textStyle: MaterialStateProperty.all<TextStyle>(TextStyle(color: Colors.white)),
+              //  foregroundColor:  MaterialStateProperty.all<Color>(Colors.blue),),
             ),
           ),
         ],

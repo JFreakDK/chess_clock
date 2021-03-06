@@ -23,10 +23,13 @@ class _TimeFieldState extends State<TimeField> {
   @override
   void initState() {
     super.initState();
-    _focusNode.addListener(() {
-      if (_focusNode.hasFocus) {
-        widget.controller.selection = TextSelection(baseOffset: 0, extentOffset: widget.controller.text.length);
-      }
+    widget.controller.addListener(() {
+      final newText = widget.controller.text.toLowerCase();
+      widget.controller.value = widget.controller.value.copyWith(
+        text: newText,
+        selection: TextSelection(baseOffset: newText.length, extentOffset: newText.length),
+        composing: TextRange.empty,
+      );
     });
   }
 
@@ -43,11 +46,10 @@ class _TimeFieldState extends State<TimeField> {
         keyboardType: TextInputType.number,
         onSubmitted: (_) => FocusScope.of(context).nextFocus(), // move focus to next
         inputFormatters: <TextInputFormatter>[
-          WhitelistingTextInputFormatter.digitsOnly,
+          FilteringTextInputFormatter.digitsOnly,
           LengthLimitingTextInputFormatter(2),
         ], // Only numbers can be entered
       ),
     );
-    ;
   }
 }

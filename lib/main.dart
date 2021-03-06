@@ -20,9 +20,7 @@ class ChessClock extends StatelessWidget {
         '/settings': (context) => Settings(),
       },
       title: 'Chess clock',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData(),
     );
   }
 }
@@ -82,30 +80,42 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
           children: <Widget>[
             RotatedBox(
               quarterTurns: 2,
-              child: _createButton(() => _player1TimeLeft, () => startTimer(player1, player2), player1),
+              child: _createButton(() => _player1TimeLeft,
+                  () => startTimer(player1, player2), player1),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                FlatButton(
-                  child: Icon(Icons.refresh, size: 70.0),
+                TextButton(
+                  child: Icon(
+                    Icons.refresh,
+                    size: 70.0,
+                    color: Colors.black,
+                  ),
                   onPressed: _reset,
                 ),
-                FlatButton(
+                TextButton(
                   child: Icon(
                     Icons.pause,
                     size: 70.0,
-                    color: (!player1.isRunning && !player2.isRunning) ? Colors.white : null,
+                    color: (!player1.isRunning && !player2.isRunning)
+                        ? Colors.white
+                        : Colors.black,
                   ),
                   onPressed: _stop,
                 ),
-                FlatButton(
-                  child: Icon(Icons.settings, size: 70.0),
+                TextButton(
+                  child: Icon(
+                    Icons.settings,
+                    size: 70.0,
+                    color: Colors.black,
+                  ),
                   onPressed: () => Navigator.pushNamed(context, '/settings'),
                 ),
               ],
             ),
-            _createButton(() => _player2TimeLeft, () => startTimer(player2, player1), player2),
+            _createButton(() => _player2TimeLeft,
+                () => startTimer(player2, player1), player2),
           ],
         ),
       ),
@@ -129,13 +139,19 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
     });
   }
 
-  Widget _createButton(Duration Function() duration, VoidCallback onPressed, Stopwatch stopwatch) {
+  Widget _createButton(Duration Function() duration, VoidCallback onPressed,
+      Stopwatch stopwatch) {
     return ConstrainedBox(
       constraints: const BoxConstraints(minWidth: double.infinity),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: FlatButton(
-          color: stopwatch.isRunning ? Colors.orange : Colors.grey.shade300,
+        child: TextButton(
+          style: ButtonStyle(
+            backgroundColor: stopwatch.isRunning
+                ? MaterialStateProperty.all<Color>(Colors.orange)
+                : MaterialStateProperty.all<Color>(Colors.grey.shade300),
+            foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+          ),
           onPressed: onPressed,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
@@ -175,7 +191,8 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
   void tick(Timer timer) {
     setState(() {
       updateTimeLeft();
-      if (_timeElapsed(_durationPlayer1, player1) || _timeElapsed(_durationPlayer2, player2)) {
+      if (_timeElapsed(_durationPlayer1, player1) ||
+          _timeElapsed(_durationPlayer2, player2)) {
         player2.stop();
         player1.stop();
         _timer.cancel();
@@ -186,14 +203,17 @@ class _ChessClockHomePageState extends State<ChessClockHomePage> {
 
   void updateTimeLeft() {
     if (player1.isRunning) {
-      _updateTimeLeft(_durationPlayer1, player1, (duration) => _player1TimeLeft = duration);
+      _updateTimeLeft(
+          _durationPlayer1, player1, (duration) => _player1TimeLeft = duration);
     }
     if (player2.isRunning) {
-      _updateTimeLeft(_durationPlayer2, player2, (duration) => _player2TimeLeft = duration);
+      _updateTimeLeft(
+          _durationPlayer2, player2, (duration) => _player2TimeLeft = duration);
     }
   }
 
-  void _updateTimeLeft(Duration duration, Stopwatch stopwatch, Function(Duration duration) updateDuration) {
+  void _updateTimeLeft(Duration duration, Stopwatch stopwatch,
+      Function(Duration duration) updateDuration) {
     var diff = (duration.inMilliseconds ?? 0) - stopwatch.elapsedMilliseconds;
     updateDuration(Duration(milliseconds: diff));
   }
