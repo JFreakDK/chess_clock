@@ -58,9 +58,9 @@ class _SettingsState extends State<Settings> {
                   hours: _player1Hours,
                   minutes: _player1Minutes,
                   seconds: _player1Seconds,
-                  onHoursChanged: (hours) => _player1Hours = int.parse(hours),
-                  onMinutesChanged: (minutes) => _player1Minutes = int.parse(minutes),
-                  onSecondsChanged: (seconds) => _player1Seconds = int.parse(seconds),
+                  onHoursChanged: (hours) => updateState(hours, (item) => _player1Hours = item),
+                  onMinutesChanged: (minutes) => updateState(minutes, (item) => _player1Minutes = item),
+                  onSecondsChanged: (seconds) => updateState(seconds, (item) => _player1Seconds = item),
                 ),
                 Text(
                   'Player 2',
@@ -70,9 +70,9 @@ class _SettingsState extends State<Settings> {
                   hours: _player2Hours,
                   minutes: _player2Minutes,
                   seconds: _player2Seconds,
-                  onHoursChanged: (hours) => _player2Hours = int.parse(hours),
-                  onMinutesChanged: (minutes) => _player2Minutes = int.parse(minutes),
-                  onSecondsChanged: (seconds) => _player2Seconds = int.parse(seconds),
+                  onHoursChanged: (hours) => updateState(hours, (item) => _player2Hours = item),
+                  onMinutesChanged: (minutes) => updateState(minutes, (item) => _player2Minutes = item),
+                  onSecondsChanged: (seconds) => updateState(seconds, (item) => _player2Seconds = item),
                   textInputAction: TextInputAction.done,
                 ),
               ],
@@ -99,5 +99,17 @@ class _SettingsState extends State<Settings> {
         ],
       ),
     );
+  }
+
+  int updateState(String minutes, Function(int item) update) {
+    var result;
+    try {
+      result = int.parse(minutes);
+      update(result);
+    } on FormatException {
+    } catch (e) {
+      throw e;
+    }
+    return result;
   }
 }
