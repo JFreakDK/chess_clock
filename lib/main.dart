@@ -4,7 +4,6 @@ import 'package:chess_clock/settings.dart';
 import 'package:chess_clock/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(ChessClock());
@@ -12,7 +11,7 @@ void main() => runApp(ChessClock());
 class ChessClock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIOverlays([]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
     return MaterialApp(
       initialRoute: '/',
       routes: {
